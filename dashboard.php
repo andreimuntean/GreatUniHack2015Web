@@ -1,8 +1,8 @@
 <?php
 session_start();
-if(!isset($_SESSION['username']))
+if(!isset($_SESSION['email']))
 {
-    header('Location: index.html');
+    header('Location: index.php');
     exit();
 }
 ?>
@@ -87,7 +87,7 @@ if(!isset($_SESSION['username']))
                       <!-- Indicators -->
                       <ol class="carousel-indicators">
                         <?php
-                          $dares = json_decode(file_get_contents("http://guh2015-api.azurewebsites.net/dares"), 1)["data"];
+                          @$dares = json_decode(file_get_contents("http://guh2015-api.azurewebsites.net/dares"), 1)["data"];
                           foreach($dares as $key => $dare)
                           {
                         ?>
@@ -99,7 +99,7 @@ if(!isset($_SESSION['username']))
                       <!-- Wrapper for slides -->
                       <div class="carousel-inner" role="listbox">
                         <?php
-                          $dares = json_decode(file_get_contents("http://guh2015-api.azurewebsites.net/dares"), 1)["data"];
+                          @$dares = json_decode(file_get_contents("http://guh2015-api.azurewebsites.net/dares"), 1)["data"];
                           foreach($dares as $key => $dare)
                           {
                             $name = $dare["Title"];
@@ -153,9 +153,10 @@ if(!isset($_SESSION['username']))
                               $title = $cause["name"];
                               $desc = $cause["description"];
                               $logo = $cause["logoAbsoluteUrl"];
+                              $id = $cause["id"];
                               ?>
-                              <option>
-                                <img src="<?=$logo?>"><h4><?$title?></h4><p><?=$desc?></p>
+                              <option value="<?=$id?>">
+                                <h4><?$title?></h4><p><?=$desc?></p>
                               </option>
                               <?php
                             }
@@ -176,11 +177,11 @@ if(!isset($_SESSION['username']))
         <div class="container">
             <div class="row">
                 <div class="col-lg-4 col-md-6 text-center">
-                  <a href="#pending" role="tab" data-toggle="tab" class="tabb">
+                  <a href="#active" role="tab" data-toggle="tab" class="tabb">
                     <div class="service-box active" role="presentation" onclick="$('.service-box').removeClass('active'); $(this).addClass('active');">
                       <i class="fa fa-4x fa-user wow bounceIn text-primary"></i>
-                      <h3>Pending Challenges</h3>
-                      <p class="text-muted">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+                      <h3>Active Challenges</h3>
+                      <p class="text-muted">Dares currently not answered.</p>
                     </div>
                   </a>
                 </div>
@@ -189,16 +190,16 @@ if(!isset($_SESSION['username']))
                     <div class="service-box" role="presentation" onclick="$('.service-box').removeClass('active'); $(this).addClass('active');">
                       <i class="fa fa-4x fa-money wow bounceIn text-primary" data-wow-delay=".1s"></i>
                       <h3>Completed challenges</h3>
-                      <p class="text-muted">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+                      <p class="text-muted">Dares that have been completed and donated for.</p>
                     </div>
                   </a>
                 </div>
                 <div class="col-lg-4 col-md-6 text-center" role="presentation">
-                  <a href="#stats" role="tab" data-toggle="tab" class="tabb">
+                  <a href="#pending" role="tab" data-toggle="tab" class="tabb">
                     <div class="service-box" onclick="$('.service-box').removeClass('active'); $(this).addClass('active');">
-                      <i class="fa fa-4x fa-pie-chart wow bounceIn text-primary" data-wow-delay=".2s"></i>
-                      <h3>Stats</h3>
-                      <p class="text-muted">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+                      <i class="fa fa-4x fa-clock-o wow bounceIn text-primary" data-wow-delay=".2s"></i>
+                      <h3>Pending Challenges</h3>
+                      <p class="text-muted">Dares that have been completed, but donation is not done yet.</p>
                     </div>
                   </a>
                 </div>
@@ -207,23 +208,23 @@ if(!isset($_SESSION['username']))
     </section>
     <div class="hrr">
       <hr class="nice-hr">
-    <div>
-    <section id="stats">
+    </div>
+    <section id="asdasdasd">
       <div class="container">
         <div class="row">
           <div class="col-lg-8 col-lg-offset-2">
             <div class="tab-content">
-              <div role="tabpanel" class="tab-pane active" id="pending">
+              <div role="tabpanel" class="tab-pane active" id="active">
                 <ul id="the_list_active">
                   <?php
                     @$challenges = json_decode(file_get_contents("http://guh2015-api.azurewebsites.net/active-dares/" . urlencode($_SESSION['email'])), 1)["data"];
                     if(!count($challenges))
                     {
                       ?>
-                      <li>
+                      <li class="no-challenges">
                         <div class="card" id="<?=$id?>">
                           <div class="card-body">
-                            No pending challenges yet
+                            No active challenges yet
                           </div>
                         </div>
                       </li>
@@ -231,14 +232,15 @@ if(!isset($_SESSION['username']))
                     }
                     foreach($challenges as $key => $challenge)
                     {
-                      $name = $challenge["DareTitle"];
-                      $id = $challenge["DareId"];
+                      $name = $challenge["Title"];
+                      $DareId = $challenge["DareId"];
+                      $id = $challenge["UserDareId"];
                       $receiver = $challenge["ReceiverEmail"];
                       $sender = $challenge["SenderEmail"];
                       $money = $challenge["Amount"];
                       $cause = $challenge["CauseId"];
-                      $description = $challenge["DareDescription"];
-                      $cause_name = $challenge["CauseName"];
+                      $description = $challenge["Description"];
+                      @$cause_name = json_decode(file_get_contents("http://guh2015-api.azurewebsites.net/causes/".$challenge["CauseId"]), 1)["data"]["name"];
                       $date = $challenge["Date"];
                   ?>
                   <li>
@@ -255,13 +257,14 @@ if(!isset($_SESSION['username']))
                           if($receiver == $_SESSION['email'])
                           {
                             ?>
-                              <a class="btn btn-default" style="border:1px solid orange">Upload Proof</a>
+                            Succsessful completion of challenge will result in a donation for<br><?=$cause_name?><br>
+                            <a data-toggle="modal" data-target="#myModal2" class="btn btn-default pull-right" style="border:1px solid orange" onclick="$('#modal_proof_dare_id').val('<?=$id?>')">Upload Proof</a>
                             <?php 
                           }
                           else
                           {
                             ?>
-                              If completed, I have to donate &pound;<?=$money?> for <?=$cause_name?>.
+                              If completed, I have to donate &pound;<?=$money?> for<br><?=$cause_name?>.
                             <?php
                           }
                         ?>
@@ -280,7 +283,7 @@ if(!isset($_SESSION['username']))
                     if(!count($challenges))
                     {
                       ?>
-                      <li>
+                      <li class="no-challenges">
                         <div class="card" id="<?=$id?>">
                           <div class="card-body">
                             No completed challenges yet
@@ -291,16 +294,18 @@ if(!isset($_SESSION['username']))
                     }
                     foreach($challenges as $key => $challenge)
                     {
-                      $name = $challenge["DareTitle"];
-                      $id = $challenge["DareId"];
+                      $name = $challenge["Title"];
+                      $DareId = $challenge["DareId"];
+                      $id = $challenge["UserDareId"];
                       $receiver = $challenge["ReceiverEmail"];
                       $sender = $challenge["SenderEmail"];
                       $money = $challenge["Amount"];
                       $cause = $challenge["CauseId"];
-                      $description = $challenge["DareDescription"];
-                      $cause_name = $challenge["CauseName"];
+                      $description = $challenge["Description"];
+                      $cause_name = json_decode(file_get_contents("http://guh2015-api.azurewebsites.net/causes/".$challenge["CauseId"]), 1)["data"]["name"];
                       $date = $challenge["Date"];
                       $json = htmlentities(json_encode($challenge));
+                      $evidence = $challenge["Evidence"];
                   ?>
                   <li>
                     <div class="card" id="<?=$id?>">
@@ -312,16 +317,73 @@ if(!isset($_SESSION['username']))
                         <?=$description?>
                       </div>
                       <div class="card-footer">
+                        Congratulations. Proof Link: <br>
+                        <?=$evidence?>
+                      </div>
+                    </div>
+                  </li>
+                  <?php
+                    }
+                  ?>
+                </ul>
+              </div>
+              <div role="tabpanel" class="tab-pane" id="pending">
+                <ul id="the_list_pending">
+                  <?php
+                    @$challenges = json_decode(file_get_contents("http://guh2015-api.azurewebsites.net/pending-dares/" . $_SESSION['email']), 1)["data"];
+                    if(!count($challenges))
+                    {
+                      ?>
+                      <li class="no-challenges">
+                        <div class="card" id="<?=$id?>">
+                          <div class="card-body">
+                            No pending challenges yet
+                          </div>
+                        </div>
+                      </li>
+                      <?php
+                    }
+                    foreach($challenges as $key => $challenge)
+                    {
+                      $name = $challenge["Title"];
+                      $DareId = $challenge["DareId"];
+                      $id = $challenge["UserDareId"];
+                      $receiver = $challenge["ReceiverEmail"];
+                      $sender = $challenge["SenderEmail"];
+                      $money = $challenge["Amount"];
+                      $cause = $challenge["CauseId"];
+                      $description = $challenge["Description"];
+                      $cause_name = json_decode(file_get_contents("http://guh2015-api.azurewebsites.net/causes/".$challenge["CauseId"]), 1)["data"]["name"];
+                      $challenge["CauseName"] = $cause_name;
+                      $date = $challenge["Date"];
+                      $json = htmlentities(json_encode($challenge));
+                      $evidence = $challenge["Evidence"];
+                  ?>
+                  <li>
+                    <div class="card" id="<?=$id?>">
+                      <div class="card-title">
+                        <h3><?=$name?><?=($receiver==$_SESSION['email'])?"<span class='pull-right'>From ".$sender."</span>":"<span class='pull-right'>Sent to ".$receiver."</span>"?></h3>
+                        <p>Created on <?=$date?></p>
+                      </div>
+                      <div class="card-body">
+                        <?=$description?><br>
+                        Proof link:<br>
+                        <?=$evidence?>
+                      </div>
+                      <div class="card-footer">
                         <?php
                           if($receiver == $_SESSION['email'])
                           {
                             ?>
-                              <a class="btn btn-default" style="border:1px solid orange">Upload Proof</a>
+                              You need to wait for the user to finish donating. They will donate to<br>
+                              <?=$cause_name?>
                             <?php 
                           }
                           else
                           {
                             ?>
+                              Please donate for<br>
+                              <?=$cause_name?><br>
                               <a data-toggle="modal" data-target="#myModal" onclick="modalFillSHIT('<?=$json?>');" class="btn btn-default pull-right" style="border:1px solid orange">Donate &pound;<?=$money?></a>
                             <?php
                           }
@@ -334,7 +396,6 @@ if(!isset($_SESSION['username']))
                   ?>
                 </ul>
               </div>
-              <div role="tabpanel" class="tab-pane" id="stats">stats</div>
             </div>
           </div>
         </div>
@@ -369,6 +430,32 @@ if(!isset($_SESSION['username']))
           <div class="modal-footer">
             <button type="button" style="border:1px solid orange;" class="btn btn-default" data-dismiss="modal">Close</button>
             <a id="donate_button" href=""><img src="http://developer.justgiving.com/ui-2013/devportal/img/donate-button.png" alt="Donate with JustGiving"></a>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
+    <div class="modal fade" tabindex="-1" role="dialog" id="myModal2">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title">Donate now</h4>
+          </div>
+          <div class="modal-body">
+            <p>Please add a link to a video proving you completed the challenge. Youtube is an easy solution.</p>
+            <form>
+              <div class="form-group input-group">
+                <label for="modal_challenge_proof">Link:</label>
+                <input type="text" placeholder="Link..." id="challenge_proof">
+                <input type="hidden" value="" id="modal_proof_dare_id">
+                <span style="color:red;" id="modal_proof_error"></span>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" style="border:1px solid orange;" class="btn btn-default" data-dismiss="modal">Close</button>
+            <a class="btn btn-success" onclick="shit()">Upload</a>
           </div>
         </div><!-- /.modal-content -->
       </div><!-- /.modal-dialog -->

@@ -169,7 +169,7 @@ $(function() {
                 challenge.append(footer);
 
                 $("#the_list_active").append(challenge);
-
+                $(".no-challenges").remove();
                 window.location = "#" + challenge_id;
             }
         });
@@ -208,4 +208,20 @@ function getRandomInt(min, max) {
         $("#donate_button").attr("href", url);
         $("#modal_money").html(challenge.Amount);
         $("#modal_cause_name").html(challenge.CauseName);
+    }
+
+    function shit() {
+        $.post('server.php', {'link': $('#challenge_proof').val(), 'dare_id': $('#modal_proof_dare_id').val()}, function (resp){
+                resp = $.parseJSON(resp);
+
+                if(!resp || resp.status == "error")
+                {
+                    $('#modal_proof_error').html('Something wrong happened. Please try again.');
+                }
+                else 
+                {
+                    window.location.reload();
+                }
+            }
+        );
     }

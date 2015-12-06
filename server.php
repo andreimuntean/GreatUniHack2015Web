@@ -91,13 +91,12 @@ if(isset($_POST['challenge_id'], $_POST['challenge_money'], $_POST['challenge_em
   $challenge_cause = htmlentities($_POST['challenge_cause']);
   @$email = $_SESSION['email'];
 
-  @$data = json_decode(file_get_contents("http://www.guh2015-api.azurewebsites.net/users/" . $challenge_email . "/" . $challenge_id . "/" . $email . "/" . $challenge_cause . "/" . $challenge_money), 1);
-
+  @$data = json_decode(file_get_contents("http://guh2015-api.azurewebsites.net/users/" . $challenge_email . "/" . $challenge_id . "/" . $email . "/" . $challenge_cause . "/" . $challenge_money), 1);
   if($data)
   {
     if($data["status"] == "success")
     {
-      $token = $data["token"];
+
     }
     else
     {
@@ -110,11 +109,14 @@ if(isset($_POST['challenge_id'], $_POST['challenge_money'], $_POST['challenge_em
   }
 
   $error = 0;
-  $data["id"] = 1212;
-  $data["description"] = "muie";
-  $data["name"] = "suji cariciu";
-  $data["cause_description"] = "muicica";
-  $data["cause_title"] = "carici";
+  $data = $data["data"];
+
+  $d2 = json_decode(file_get_contents("http://guh2015-api.azurewebsites.net/dares/" . $challenge_id),1)["data"];
+  $data["description"] = $d2["Description"];
+  $data["name"] = $d2["Title"];
+  $d2 = json_decode(file_get_contents("http://guh2015-api.azurewebsites.net/causes/" . $challenge_cause),1)["data"];
+  $data["cause_description"] = $d2["description"];
+  $data["cause_title"] = $d2["name"];
   if(!$error)
   {
     echo json_encode(array("status" => "success", "data" => array("challenge_id" => $data["id"], "challenge_description" => $data["description"], "challenge_name" => $data["name"], "cause_description" => $data['cause_description'], "cause_title" => $data["cause_title"])));
@@ -126,6 +128,41 @@ if(isset($_POST['challenge_id'], $_POST['challenge_money'], $_POST['challenge_em
     exit();
   }
 
+}
+
+if(isset($_POST['link'], $_POST['dare_id']))
+{
+  $link = $_POST['link'];
+  $id = htmlentities($_POST['dare_id']);
+
+  @$data = json_decode(file_get_contents("http://guh2015-api.azurewebsites.net/evidence/" . $id . "/". urlencode($link)), 1);
+
+  if($data)
+  {
+    if($data["status"] == "success")
+    {
+      @$data = json_decode(file_get_contents("http://guh2015-api.azurewebsites.net/status/" . $id . "/1"), 1);
+    }
+    else
+    {
+      $error = 1;
+    }
+  }
+  else
+  {
+    $error = 1;
+  }
+
+  if(!$error)
+  {
+    echo json_encode(array("status" => "success"));
+    exit();
+  }
+  else
+  {
+    echo json_encode(array("status" => "error"));
+    exit();
+  }
 }
 
 ?>
