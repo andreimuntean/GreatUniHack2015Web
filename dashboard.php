@@ -214,9 +214,9 @@ if(!isset($_SESSION['username']))
           <div class="col-lg-8 col-lg-offset-2">
             <div class="tab-content">
               <div role="tabpanel" class="tab-pane active" id="pending">
-                <ul id="the_list_pending">
+                <ul id="the_list_active">
                   <?php
-                    @$challenges = json_decode(file_get_contents("http://guh2015-api.azurewebsites.net/pending-dares/" . urlencode($_SESSION['email'])), 1)["data"];
+                    @$challenges = json_decode(file_get_contents("http://guh2015-api.azurewebsites.net/active-dares/" . urlencode($_SESSION['email'])), 1)["data"];
                     if(!count($challenges))
                     {
                       ?>

@@ -168,7 +168,7 @@ $(function() {
                 challenge.append(ch_body);
                 challenge.append(footer);
 
-                $("#the_list_pending").append(challenge);
+                $("#the_list_active").append(challenge);
 
                 window.location = "#" + challenge_id;
             }
