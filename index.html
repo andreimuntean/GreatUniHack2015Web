@@ -1,3 +1,12 @@
+<?php
+session_start();
+if(isset($_SESSION["email"]))
+{
+    header("Location: dashboard.php");
+    exit();
+}
+
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -101,9 +110,9 @@
             <div class="modal-body">
                 <div id="div-login-msg">
                     <div id="icon-login-msg" class="glyphicon glyphicon-chevron-right"></div>
-                    <span id="text-login-msg">Type your username and password.</span>
+                    <span id="text-login-msg">Type your email and password.</span>
                 </div>
-                <input id="login_username" class="form-control" type="text" placeholder="Username" required>
+                <input id="login_email" class="form-control" type="email" placeholder="Email" required>
                 <input id="login_password" class="form-control" type="password" placeholder="Password" required>
                 <div class="checkbox">
                     <label>
@@ -151,7 +160,6 @@
                     <div id="icon-register-msg" class="glyphicon glyphicon-chevron-right"></div>
                     <span id="text-register-msg">Register an account.</span>
                 </div>
-                <input id="register_username" class="form-control" type="text" placeholder="Username" required>
                 <input id="register_email" class="form-control" type="text" placeholder="E-Mail" required>
                 <input id="register_password" class="form-control" type="password" placeholder="Password" required>
             </div>

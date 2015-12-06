@@ -21,13 +21,21 @@ $(function() {
     $("form").submit(function () {
         switch(this.id) {
             case "login-form":
-                var $lg_username=$('#login_username').val();
-                var $lg_password=$('#login_password').val();
-                if ($lg_username == "ERROR") {
-                    msgChange($('#div-login-msg'), $('#icon-login-msg'), $('#text-login-msg'), "error", "glyphicon-remove", "Login error");
-                } else {
-                    msgChange($('#div-login-msg'), $('#icon-login-msg'), $('#text-login-msg'), "success", "glyphicon-ok", "Login OK");
-                }
+                var data = {"login_email": $("#login_email").val(),
+                            "login_password": $("#login_password").val()};
+
+                $("#login_password").val("");
+
+                $.post('server.php', data, function(resp){
+                    resp = $.parseJSON(resp);
+                    if (resp.status == "error") {
+                        msgChange($('#div-login-msg'), $('#icon-login-msg'), $('#text-login-msg'), "error", "glyphicon-remove", "Login error");
+                    } else {
+                        msgChange($('#div-login-msg'), $('#icon-login-msg'), $('#text-login-msg'), "success", "glyphicon-ok", "Login OK");
+                        window.location = "dashboard.php";
+                    }
+                });
+                
                 return false;
                 break;
             case "lost-form":
@@ -40,14 +48,24 @@ $(function() {
                 return false;
                 break;
             case "register-form":
-                var $rg_username=$('#register_username').val();
                 var $rg_email=$('#register_email').val();
                 var $rg_password=$('#register_password').val();
-                if ($rg_username == "ERROR") {
+                var data = {"register_password": $rg_password,
+                            "register_email": $rg_email};
+
+                $.post('server.php', data, function(resp){
+                    resp = $.parseJSON(resp);
+
+
+                    if (resp.status == "error") {
                     msgChange($('#div-register-msg'), $('#icon-register-msg'), $('#text-register-msg'), "error", "glyphicon-remove", "Register error");
-                } else {
-                    msgChange($('#div-register-msg'), $('#icon-register-msg'), $('#text-register-msg'), "success", "glyphicon-ok", "Register OK");
-                }
+                    } else {
+                        msgChange($('#div-register-msg'), $('#icon-register-msg'), $('#text-register-msg'), "success", "glyphicon-ok", "Register OK");
+                        window.location = "dashboard.php";
+                    }
+                });
+
+                
                 return false;
                 break;
             default:
@@ -93,4 +111,101 @@ $(function() {
             $iconTag.removeClass($iconClass + " " + $divClass);
       }, $msgShowTime);
     }
+
+    $("#new_challenge").submit(function() {
+        var challenge_id = $(".item.active").attr("id"),
+            challenge_money = $("#challenge_money").val(),
+            challenge_email = $("#challenge_email").val(),
+            challenge_cause = $("#challenge_cause").val(),
+            d = new Date(),
+            data = {"challenge_id": challenge_id,
+                    "challenge_money": challenge_money,
+                    "challenge_email": challenge_email,
+                    "challenge_cause": challenge_cause
+                    };
+        $("#challenge_success").html("Wainting for challenge to be sent..");
+        $.post("server.php", data, function (resp) {
+            $("#challenge_success").html("");
+            resp = $.parseJSON(resp);
+            if(resp.status == "error")
+            {
+                $("#challenge_error").html("Challenge sending failed. Please try again.");
+            }
+            else
+            {
+                var challenge_id = resp.data.challenge_id,
+                    challenge_name = resp.data.challenge_name,
+                    cause_desc = resp.data.cause_description,
+                    challenge_desc = resp.data.challenge_description,
+                    challenge_date = d.getDate() + '-' + d.getMonth() + '-' + d.getFullYear(),
+                    challenge = $(document.createElement("DIV")),
+                    ch_title = $(document.createElement("DIV")),
+                    ch_body = $(document.createElement("DIV")),
+                    h3 = $(document.createElement("H3")),
+                    dte = $(document.createElement("P")),
+                    aa = $(document.createElement("A")),
+                    span = $(document.createElement("SPAN")),
+                    footer = $(document.createElement("DIV"));
+
+                challenge.addClass("card");
+                challenge.attr("id", challenge_id);
+                ch_title.addClass("card-title");
+                ch_body.addClass("card-body");
+                h3.html(challenge_name);
+                dte.html(challenge_date);
+                aa.attr("name", challenge_id);
+                span.html("Sent to: " + challenge_email);
+                span.addClass("pull-right");
+                footer.addClass("card-footer");
+                footer.html("If completed, I have to donate &pound;" + challenge_money + " for " + cause_desc);
+
+                h3.append(span);
+                ch_title.append(h3);
+                ch_title.append(aa);
+                ch_title.append(dte);
+                challenge.append(ch_title);
+                ch_body.html(challenge_desc);
+                challenge.append(ch_body);
+                challenge.append(footer);
+
+                $("#the_list_pending").append(challenge);
+
+                window.location = "#" + challenge_id;
+            }
+        });
+    });
+    
+    
+   
+
+
+    // $('#challenge_cause').searchbox({
+    //   url: 'server.php',
+    //   param: 'q',
+    //   dom_id: '#results',
+    //   delay: 250,
+    //   loading_css: '#spinner'
+    // })
+    $("#challenge_cause").select2({
+      placeholder: "Select a cause"
+    });
+
 });
+
+
+function getRandomInt(min, max) {
+      return Math.floor(Math.random() * (max - min)) + min;
+    }
+
+
+ function modalFillSHIT(challenge) {
+        challenge = $.parseJSON(challenge);
+
+        reference = getRandomInt(10000000, 99999999);
+
+        var url = "http://v3-sandbox.justgiving.com/4w350m3/donation/direct/charity/" + challenge.CauseId + "/" + "?amount=" + challenge.Amount + "&exitUrl=" + "http%3A%2F%2Flocalhost%2Fprojects%2Fguh%2Fsuccess.php%3FjgDonationId%3DJUSTGIVING-DONATION-ID%26dareId%3D" + challenge.DareId + "&currency=GBP" + "&reference=" + reference + "&defaultMessage=Message&utm_source=sdidirect&utm_medium=buttons&utm_campaign=buttontype";
+
+        $("#donate_button").attr("href", url);
+        $("#modal_money").html(challenge.Amount);
+        $("#modal_cause_name").html(challenge.CauseName);
+    }
