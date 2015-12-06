@@ -91,7 +91,7 @@ if(isset($_POST['challenge_id'], $_POST['challenge_money'], $_POST['challenge_em
   $challenge_cause = htmlentities($_POST['challenge_cause']);
   @$email = $_SESSION['email'];
 
-  @$data = json_decode(file_get_contents("http://www.guh2015-api.azurewebsites.net/add_dare/" . $email . "/" . $challenge_id . "/" . $challenge_email . "/" . $challenge_cause . "/" . $challenge_money), 1);
+  @$data = json_decode(file_get_contents("http://www.guh2015-api.azurewebsites.net/users/" . $challenge_email . "/" . $challenge_id . "/" . $email . "/" . $challenge_cause . "/" . $challenge_money), 1);
 
   if($data)
   {
@@ -114,10 +114,10 @@ if(isset($_POST['challenge_id'], $_POST['challenge_money'], $_POST['challenge_em
   $data["description"] = "muie";
   $data["name"] = "suji cariciu";
   $data["cause_description"] = "muicica";
-
+  $data["cause_title"] = "carici";
   if(!$error)
   {
-    echo json_encode(array("status" => "success", "data" => array("challenge_id" => $data["id"], "challenge_description" => $data["description"], "challenge_name" => $data["name"], "cause_description" => $data['cause_description'])));
+    echo json_encode(array("status" => "success", "data" => array("challenge_id" => $data["id"], "challenge_description" => $data["description"], "challenge_name" => $data["name"], "cause_description" => $data['cause_description'], "cause_title" => $data["cause_title"])));
     exit();
   }
   else
